@@ -1,9 +1,9 @@
 Subtipo,Cantidad
-subtipo16_boards-tipo2,137
-subtipo18_boards-tipo3,111
-subtipo12_boards-tipo1,94
-subtipo32_tarjeta-disco-duro,90
-subtipo26_celular-sin-bateria-antiguo,71
+subtipo16_boards-tipo2,174
+subtipo18_boards-tipo3,152
+subtipo12_boards-tipo1,134
+subtipo32_tarjeta-disco-duro,130
+subtipo26_celular-sin-bateria-antiguo,91
 subtipo03_pentium-iii-verde-amarillo,60
 subtipo04_pentium-iii-color,55
 subtipo36_slot-processor,51
@@ -43,4 +43,4 @@ subtipo31_tarjeta-celular-china,0
 subtipo41_procesador-ceramico-aluminio,0
 subtipo43_procesadores_amd_dorado,0
 
-TOTAL GLOBAL,1484
+TOTAL GLOBAL,1662
