@@ -1,0 +1,67 @@
+name: "Ingest images to GCS by tag"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to ingest (example: v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PROJECT_ID: plaki-api
+  REGION: us-central1
+  BUCKET_NAME: bg-metal-datasets
+  WORKFLOW_NAME: image-ingestion-workflow
+
+jobs:
+  ingest:
+    name: "Clone tag and upload to GCS"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout repository at tag"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 1
+
+      - name: "Authenticate to Google Cloud (WIF)"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/1078493089754/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "github-action-workflow-sa@plaki-api.iam.gserviceaccount.com"
+
+      - name: "Setup gcloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: "Validate data/train folder exists"
+        run: |
+          if [ ! -d "data/train" ]; then
+            echo "❌ data/train folder not found"
+            exit 1
+          fi
+
+      - name: "Upload train images to GCS"
+        run: |
+          VERSION=${{ inputs.tag }}
+          DEST="gs://${BUCKET_NAME}/${VERSION}/raw/train"
+
+          echo "Uploading data/train to $DEST"
+          gsutil -m rsync -r data/train "$DEST"
+
+      - name: "Trigger Cloud Workflow"
+        run: |
+          gcloud workflows executions run $WORKFLOW_NAME \
+            --location=$REGION \
+            --data='{
+              "version": "${{ inputs.tag }}",
+              "bucket": "'"${BUCKET_NAME}"'",
+              "prefix": "'"${{ inputs.tag }}/raw/train"'"
+            }'
