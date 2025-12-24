@@ -1,0 +1,59 @@
+name: "Bootstrap ETL Infrastructure"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "config/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PROJECT_ID: plaki-api
+  REGION: us-central1
+  WORKFLOW_NAME: image-ingestion-workflow
+  PUBSUB_TOPIC: image-processing-step-1
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      # 2️⃣ Auth con WIF
+      - name: "Authenticate to Google Cloud (WIF)"
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/1078493089754/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "github-action-workflow-sa@plaki-api.iam.gserviceaccount.com"
+
+      # 3️⃣ Setup gcloud
+      - name: "Setup gcloud SDK"
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      # 4️⃣ Crear Pub/Sub topic si no existe
+      - name: "Create Pub/Sub topic if not exists"
+        run: |
+          if gcloud pubsub topics describe $PUBSUB_TOPIC --project=$PROJECT_ID > /dev/null 2>&1; then
+            echo "ℹ️ Pub/Sub topic '$PUBSUB_TOPIC' already exists"
+          else
+            echo "Creating Pub/Sub topic '$PUBSUB_TOPIC'"
+            gcloud pubsub topics create $PUBSUB_TOPIC --project=$PROJECT_ID
+          fi
+
+      # 5️⃣ Crear / actualizar Cloud Workflow
+      - name: "Deploy Cloud Workflow"
+        run: |
+          echo "Deploying Cloud Workflow '$WORKFLOW_NAME'"
+          gcloud workflows deploy $WORKFLOW_NAME \
+            --source=config/image_ingestion_workflow.yaml \
+            --location=$REGION \
+            --project=$PROJECT_ID \
+            --service-account=github-actions-sa@plaki-api.iam.gserviceaccount.com

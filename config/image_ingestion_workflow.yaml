@@ -1,0 +1,59 @@
+main:
+  params:
+    - input
+  steps:
+
+    - init:
+        assign:
+          - project: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - bucket: ${input.bucket}
+          - prefix: ${input.prefix}
+          - version: ${input.version}
+          - topic: ${"projects/" + project + "/topics/image-processing-step-1"}
+
+    - list_objects:
+        call: googleapis.storage.v1.objects.list
+        args:
+          bucket: ${bucket}
+          prefix: ${prefix}
+        result: objects
+    - extract_images:
+        assign:
+          - images: ${objects.items}
+
+    - check_empty:
+        switch:
+          - condition: ${images == null or len(images) == 0}
+            next: no_images
+        next: publish_images
+
+    - publish_images:
+        for:
+          value: obj
+          in: ${objects.items}
+          steps:
+
+            - build_payload:
+                assign:
+                  - payload:
+                      version: ${version}
+                      bucket: ${bucket}
+                      input_path: ${"gs://" + bucket + "/" + obj.name}
+                      step: "step-1"
+
+            - publish_message:
+                call: googleapis.pubsub.v1.projects.topics.publish
+                args:
+                  topic: ${topic}
+                  body:
+                    messages:
+                      - data: ${base64.encode(json.encode(payload))}
+
+    - done:
+        return:
+          status: "OK"
+          images_published: ${len(objects.items)}
+
+    - no_images:
+        return:
+          status: "NO_IMAGES_FOUND"
