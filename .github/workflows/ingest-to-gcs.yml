@@ -40,7 +40,20 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
+          
+      - name: "Validate version does not exist in GCS"
+        run: |
+          VERSION=${{ inputs.tag }}
+          BUCKET=${{ env.BUCKET_NAME }}
 
+          echo "Checking if gs://${BUCKET}/${VERSION}/ exists..."
+
+          if gsutil ls "gs://${BUCKET}/${VERSION}/" > /dev/null 2>&1; then
+            echo "❌ Version ${VERSION} already exists in GCS. Aborting."
+            exit 1
+          else
+            echo "✅ Version ${VERSION} does not exist. Proceeding."
+          fi
       - name: "Validate data/train folder exists"
         run: |
           if [ ! -d "data/train" ]; then
@@ -58,10 +71,11 @@ jobs:
 
       - name: "Trigger Cloud Workflow"
         run: |
-          gcloud workflows executions run $WORKFLOW_NAME \
+          gcloud workflows run $WORKFLOW_NAME \
             --location=$REGION \
             --data='{
-              "version": "${{ inputs.tag }}",
               "bucket": "'"${BUCKET_NAME}"'",
-              "prefix": "'"${{ inputs.tag }}/raw/train"'"
+              "prefix": "'"${{ inputs.tag }}/raw/train"'",
+              "version": "${{ inputs.tag }}"
+              
             }'
