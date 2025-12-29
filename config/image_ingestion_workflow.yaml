@@ -9,7 +9,7 @@ main:
           - bucket: ${input.bucket}
           - prefix: ${input.prefix}
           - version: ${input.version}
-          - topic: ${"projects/" + project + "/topics/image-processing-step-1"}
+          - topic: ${"projects/" + project + "/topics/image-processing-step-1-topic"}
 
     - list_objects:
         call: googleapis.storage.v1.objects.list
