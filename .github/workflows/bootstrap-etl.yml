@@ -11,7 +11,7 @@ env:
   PROJECT_ID: plaki-api
   REGION: us-central1
   WORKFLOW_NAME: image-ingestion-workflow
-  PUBSUB_TOPIC: image-processing-step-1
+  PUBSUB_TOPIC: image-processing-step-1-topic
 
 jobs:
   bootstrap:

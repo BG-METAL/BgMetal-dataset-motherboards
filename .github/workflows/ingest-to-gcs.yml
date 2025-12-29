@@ -14,7 +14,7 @@ permissions:
 
 env:
   PROJECT_ID: plaki-api
-  REGION: us-central1
+  REGION: us-east1
   BUCKET_NAME: bg-metal-datasets
   WORKFLOW_NAME: image-ingestion-workflow
 
