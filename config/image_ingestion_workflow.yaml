@@ -39,7 +39,7 @@ main:
 
     - process_images:
         switch:
-          - condition: ${images == []}
+          - condition: ${len(images) == 0}
             next: handle_pagination
         next: publish_images
 
