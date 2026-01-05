@@ -25,11 +25,11 @@ main:
     
     - extract_images:
         assign:
-          - images: ${objects.items}
+          - images: ${map.get(objects, "items", [])}
 
     - check_empty_page:
         switch:
-          - condition: ${images == null or len(images) == 0}
+          - condition: ${len(images) == 0}
             next: check_next_page
         next: publish_images
 
@@ -60,7 +60,7 @@ main:
 
     - check_next_page:
         assign:
-          - pageToken: ${objects.nextPageToken}
+          - pageToken: ${map.get(objects, "nextPageToken", null)}
 
 
     - has_more_pages:
