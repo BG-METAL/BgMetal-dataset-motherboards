@@ -10,27 +10,33 @@ main:
           - prefix: ${input.prefix}
           - version: ${input.version}
           - topic: ${"projects/" + project + "/topics/image-processing-step-1-topic"}
+          - pageToken: null
+          - publishedCount: 0
+
 
     - list_objects:
         call: googleapis.storage.v1.objects.list
         args:
           bucket: ${bucket}
           prefix: ${prefix}
+          pageToken: ${pageToken}
+          maxResults: 100        # 🔑 CLAVE PARA MEMORIA
         result: objects
+    
     - extract_images:
         assign:
           - images: ${objects.items}
 
-    - check_empty:
+    - check_empty_page:
         switch:
           - condition: ${images == null or len(images) == 0}
-            next: no_images
+            next: check_next_page
         next: publish_images
 
     - publish_images:
         for:
           value: obj
-          in: ${objects.items}
+          in: ${images}
           steps:
 
             - build_payload:
@@ -48,12 +54,22 @@ main:
                   body:
                     messages:
                       - data: ${base64.encode(json.encode(payload))}
+            - inc_counter:
+                assign:
+                  - publishedCount: ${publishedCount + 1}
+
+    - check_next_page:
+        assign:
+          - pageToken: ${objects.nextPageToken}
+
+
+    - has_more_pages:
+        switch:
+          - condition: ${pageToken != null}
+            next: list_objects
+        next: done
 
     - done:
         return:
           status: "OK"
-          images_published: ${len(objects.items)}
-
-    - no_images:
-        return:
-          status: "NO_IMAGES_FOUND"
+          images_published: ${publishedCount}
