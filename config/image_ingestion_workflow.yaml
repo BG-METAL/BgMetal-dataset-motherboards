@@ -25,12 +25,22 @@ main:
     
     - extract_images:
         assign:
-          - images: ${map.get(objects, "items", [])}
+          - images: ${objects.items}
 
-    - check_empty_page:
+    - normalize_images:
+      switch:
+        - condition: ${images == null}
+          next: set_empty_images
+      next: process_images
+
+    - set_empty_images:
+        assign:
+          - images: []
+
+    - process_images:
         switch:
-          - condition: ${len(images) == 0}
-            next: check_next_page
+          - condition: ${images == []}
+            next: handle_pagination
         next: publish_images
 
     - publish_images:
@@ -58,10 +68,21 @@ main:
                 assign:
                   - publishedCount: ${publishedCount + 1}
 
-    - check_next_page:
-        assign:
-          - pageToken: ${map.get(objects, "nextPageToken", null)}
+    - handle_pagination:
+        switch:
+          - condition: ${objects.nextPageToken != null}
+            next: set_next_page
+        next: clear_page_token
 
+    - set_next_page:
+        assign:
+          - pageToken: ${objects.nextPageToken}
+        next: has_more_pages
+
+    - clear_page_token:
+        assign:
+          - pageToken: null
+        next: has_more_pages
 
     - has_more_pages:
         switch:
@@ -73,3 +94,5 @@ main:
         return:
           status: "OK"
           images_published: ${publishedCount}
+
+
