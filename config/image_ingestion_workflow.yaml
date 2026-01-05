@@ -39,7 +39,7 @@ main:
 
     - process_images:
         switch:
-          - condition: ${len(images) == 0}
+          - condition: ${size(images) == 0}
             next: handle_pagination
         next: publish_images
 
@@ -70,7 +70,7 @@ main:
 
     - handle_pagination:
         switch:
-          - condition: ${objects.nextPageToken != null}
+          - condition: ${"nextPageToken" in objects}
             next: set_next_page
         next: clear_page_token
 
