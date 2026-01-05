@@ -28,10 +28,10 @@ main:
           - images: ${objects.items}
 
     - normalize_images:
-      switch:
-        - condition: ${images == null}
-          next: set_empty_images
-      next: process_images
+        switch:
+          - condition: ${images == null}
+            next: set_empty_images
+        next: process_images
 
     - set_empty_images:
         assign:
