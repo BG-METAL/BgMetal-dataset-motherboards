@@ -23,30 +23,16 @@ main:
           maxResults: 100        # 🔑 CLAVE PARA MEMORIA
         result: objects
     
-    - extract_images:
-        assign:
-          - images: ${objects.items}
-
     - normalize_images:
         switch:
-          - condition: ${images == null}
-            next: set_empty_images
-        next: process_images
-
-    - set_empty_images:
-        assign:
-          - images: []
-
-    - process_images:
-        switch:
-          - condition: ${size(images) == 0}
+          - condition: ${objects.items == null}
             next: handle_pagination
         next: publish_images
 
     - publish_images:
         for:
           value: obj
-          in: ${images}
+          in: ${objects.items}
           steps:
 
             - build_payload:
@@ -72,23 +58,12 @@ main:
         switch:
           - condition: ${"nextPageToken" in objects}
             next: set_next_page
-        next: clear_page_token
+        next: done
 
     - set_next_page:
         assign:
           - pageToken: ${objects.nextPageToken}
-        next: has_more_pages
-
-    - clear_page_token:
-        assign:
-          - pageToken: null
-        next: has_more_pages
-
-    - has_more_pages:
-        switch:
-          - condition: ${pageToken != null}
-            next: list_objects
-        next: done
+        next: list_objects
 
     - done:
         return:
