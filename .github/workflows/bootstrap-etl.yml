@@ -13,6 +13,10 @@ env:
   WORKFLOW_NAME: image-ingestion-workflow
   PUBSUB_TOPIC: image-processing-step-1-topic
 
+  #Segurity
+  WIF_PROVIDER: projects/1078493089754/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+  SA_EMAIL: github-action-workflow-sa@plaki-api.iam.gserviceaccount.com
+
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
@@ -26,8 +30,8 @@ jobs:
       - name: "Authenticate to Google Cloud (WIF)"
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: "projects/1078493089754/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
-          service_account: "github-action-workflow-sa@plaki-api.iam.gserviceaccount.com"
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SA_EMAIL }}
 
       # 3️⃣ Setup gcloud
       - name: "Setup gcloud SDK"
