@@ -68,7 +68,7 @@ jobs:
       - name: "Upload train images to GCS"
         run: |
           VERSION=${{ inputs.tag }}
-          DEST="gs://${BUCKET_NAME}/${VERSION}/raw/train"
+          DEST="gs://${BUCKET_NAME}/${VERSION}/train"
 
           echo "Uploading data/train to $DEST"
           gsutil -m rsync -r data/train "$DEST"
@@ -79,7 +79,7 @@ jobs:
             --location=$REGION \
             --data='{
               "bucket": "'"${BUCKET_NAME}"'",
-              "prefix": "'"${{ inputs.tag }}/raw/train"'",
+              "prefix": "'"${{ inputs.tag }}/train"'",
               "version": "${{ inputs.tag }}"
               
             }'
