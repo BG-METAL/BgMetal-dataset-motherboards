@@ -18,6 +18,10 @@ env:
   BUCKET_NAME: bg-metal-datasets
   WORKFLOW_NAME: image-ingestion-workflow
 
+  #Segurity
+  WIF_PROVIDER: projects/1078493089754/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+  SA_EMAIL: github-action-workflow-sa@plaki-api.iam.gserviceaccount.com
+
 jobs:
   ingest:
     name: "Clone tag and upload to GCS"
@@ -33,8 +37,8 @@ jobs:
       - name: "Authenticate to Google Cloud (WIF)"
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: "projects/1078493089754/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
-          service_account: "github-action-workflow-sa@plaki-api.iam.gserviceaccount.com"
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SA_EMAIL }}
 
       - name: "Setup gcloud SDK"
         uses: google-github-actions/setup-gcloud@v2
