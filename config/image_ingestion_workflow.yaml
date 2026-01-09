@@ -13,6 +13,11 @@ main:
           - pageToken: null
           - publishedCount: 0
 
+    - log_init:
+        call: sys.log
+        args:
+          text: ${"🚀 Workflow started | bucket=" + bucket + " | prefix=" + prefix + " | version=" + version}
+          severity: INFO
 
     - list_objects:
         call: googleapis.storage.v1.objects.list

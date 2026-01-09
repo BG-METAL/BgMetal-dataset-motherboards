@@ -57,4 +57,4 @@ jobs:
             --source=config/image_ingestion_workflow.yaml \
             --location=$REGION \
             --project=$PROJECT_ID \
-            --service-account=github-action-workflow-sa@plaki-api.iam.gserviceaccount.com
+            --service-account=$SA_EMAIL
