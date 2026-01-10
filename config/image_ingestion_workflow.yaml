@@ -6,6 +6,8 @@ main:
     - init:
         assign:
           - project: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - region: "us-east1"
+          - job_name: "step-1-quality-filter-job"
           - bucket: ${input.bucket}
           - prefix: ${input.prefix}
           - version: ${input.version}
@@ -59,7 +61,7 @@ main:
                 call: sys.log
                 args:
                   text: ${"Publicado gs://" + bucket + "/" + obj.name}
-                  severity: INFO
+                  severity: DEBUG
 
             - inc_counter:
                 assign:
@@ -69,12 +71,27 @@ main:
         switch:
           - condition: ${"nextPageToken" in objects}
             next: set_next_page
-        next: done
+        next: trigger_job
+
 
     - set_next_page:
         assign:
           - pageToken: ${objects.nextPageToken}
         next: list_objects
+
+    # 🚀 NUEVO PASO CLAVE
+    - trigger_job:
+        call: googleapis.run.v2.projects.locations.jobs.executions.create
+        args:
+          parent: ${"projects/" + project + "/locations/" + region + "/jobs/" + job_name}
+          body: {}
+        result: job_execution
+
+    - log_job:
+        call: sys.log
+        args:
+          text: ${"🔥Cloud Run Job ejecutado:" + job_execution.name}
+          severity: INFO
 
     - done:
         return:
