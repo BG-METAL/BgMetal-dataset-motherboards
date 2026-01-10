@@ -81,9 +81,11 @@ main:
 
     # 🚀 NUEVO PASO CLAVE
     - trigger_job:
-        call: googleapis.run.v2.projects.locations.jobs.executions.create
+        call: http.post
         args:
-          parent: ${"projects/" + project + "/locations/" + region + "/jobs/" + job_name}
+          url: ${"https://run.googleapis.com/v2/projects/" + project + "/locations/us-east1/jobs/step-1-quality-filter-job:run"}
+          auth:
+            type: OAuth2
           body: {}
         result: job_execution
 
