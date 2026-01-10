@@ -55,6 +55,12 @@ main:
                   body:
                     messages:
                       - data: ${base64.encode(json.encode(payload))}
+            - log_published:
+                call: sys.log
+                args:
+                  text: ${"Publicado gs://" + bucket + "/" + obj.name}
+                  severity: INFO
+
             - inc_counter:
                 assign:
                   - publishedCount: ${publishedCount + 1}
