@@ -92,7 +92,7 @@ main:
     - log_job:
         call: sys.log
         args:
-          text: ${"🔥Cloud Run Job ejecutado:" + job_execution.name}
+          text: ${"🔥Cloud Run Job ejecutado:" + job_execution.body.name}
           severity: INFO
 
     - done:
